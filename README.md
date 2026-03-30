@@ -1,5 +1,10 @@
 # tgcast
 
+[![PyPI](https://img.shields.io/pypi/v/tgcast)](https://pypi.org/project/tgcast/)
+[![Python](https://img.shields.io/pypi/pyversions/tgcast)](https://pypi.org/project/tgcast/)
+[![Context7](https://img.shields.io/badge/Context7-Docs-blue)](https://context7.com/seinarukiro2/telecast-python)
+[![License](https://img.shields.io/github/license/Seinarukiro2/telecast-python)](LICENSE)
+
 Lightweight Telegram Bot API broadcast engine for Python.
 
 - **Self-contained** — no external server, just `pip install` and go

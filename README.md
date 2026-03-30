@@ -1,0 +1,150 @@
+# Telecast
+
+Lightweight Telegram Bot API broadcast engine for Python.
+
+- **Self-contained** — no external server, just `pip install` and go
+- **Priority queues** with weighted round-robin (5:3:1) and starvation prevention
+- **Rate limiting** — global + per-chat token buckets, auto-adapts to Telegram 429
+- **Campaigns** — broadcast to millions in batches, crash-safe with idempotent enqueue
+- **SQLite** — WAL mode, single-file, zero config
+- **Templates** — YAML with locale fallback, or plug in your own renderer
+
+> **Intended use:** transactional notifications and opt-in messaging.
+> Please respect [Telegram Bot API policies](https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once).
+
+## Install
+
+```bash
+pip install telecast
+```
+
+For YAML templates:
+
+```bash
+pip install telecast[templates]
+```
+
+Requires Python 3.11+.
+
+## Quickstart
+
+```python
+import os
+import signal
+from telecast import Telecast, Task
+
+eng = Telecast(bot_token=os.environ["BOT_TOKEN"])
+eng.start()
+
+task_id = eng.enqueue(Task(
+    chat_id=123456789,
+    text="Hello from Telecast!",
+))
+print(f"Enqueued: {task_id}")
+
+signal.pause()
+eng.shutdown()
+```
+
+Or as a context manager:
+
+```python
+with Telecast(bot_token="...") as eng:
+    eng.enqueue(Task(chat_id=123, text="Hi!"))
+```
+
+See [`examples/`](examples/) for more.
+
+## API
+
+```python
+# Lifecycle
+eng = Telecast(bot_token="...", store_dsn="telecast.db")
+eng.start()
+eng.shutdown()
+
+# Tasks
+task_id = eng.enqueue(Task(...))
+status = eng.task_status(task_id)
+
+# Campaigns
+cid = eng.create_campaign(CampaignConfig(name="...", template_key="..."))
+eng.add_recipients(cid, [Recipient(chat_id=1), ...])
+eng.start_campaign(cid)
+eng.pause_campaign(cid)
+stats = eng.campaign_stats(cid)
+
+# Dead-letter queue
+tasks, total = eng.dlq_list(limit=20, offset=0)
+eng.dlq_requeue(task_id)
+```
+
+## Templates
+
+YAML with locale fallback (exact -> base -> `en`):
+
+```yaml
+welcome:
+  en: "Hello, {name}!"
+  ru: "Привет, {name}!"
+```
+
+```python
+eng = Telecast(
+    bot_token="...",
+    templates_path="templates.yaml",
+)
+eng.enqueue(Task(
+    chat_id=123,
+    template_key="welcome",
+    locale="ru",
+    vars={"name": "Иван"},
+))
+```
+
+Or a custom renderer:
+
+```python
+class MyRenderer:
+    def render(self, key: str, locale: str, vars: dict) -> str:
+        return f"Hi {vars['name']}!"
+
+eng = Telecast(bot_token="...", template_renderer=MyRenderer())
+```
+
+## Configuration
+
+All parameters have sensible defaults. Only `bot_token` is required.
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `bot_token` | — | Telegram Bot API token |
+| `store_dsn` | `telecast.db` | SQLite database path |
+| `templates_path` | — | YAML templates file |
+| `templates_data` | — | YAML templates as bytes |
+| `template_renderer` | — | Custom renderer (overrides YAML) |
+| `global_rps` | `25` | Global messages/sec |
+| `per_chat_rps` | `1` | Per-chat messages/sec |
+| `max_concurrency` | `8` | Worker pool size |
+| `lease_ttl` | `30` | Task lease duration (seconds) |
+| `max_retries` | `5` | Max retries before DLQ |
+| `base_backoff` | `1` | Initial retry delay (seconds) |
+| `max_backoff` | `300` | Max retry delay (seconds) |
+
+## Idempotency
+
+Set `Task.idempotency_key` to prevent duplicate sends:
+
+```python
+eng.enqueue(Task(
+    chat_id=123,
+    text="Order confirmed",
+    idempotency_key="order:456:confirmation",
+))
+```
+
+Campaign tasks auto-generate keys: `campaign:{id}:{chat_id}`.
+
+## License
+
+MIT

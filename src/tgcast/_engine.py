@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from telecast._models import (
+from tgcast._models import (
     CampaignStatus,
     LocaleStrategy,
     Priority,
@@ -19,10 +19,10 @@ from telecast._models import (
     Task,
     TaskKind,
 )
-from telecast._ratelimit import RateLimiter
-from telecast._storage import Store
-from telecast._telegram import APIError, TelegramClient
-from telecast._templates import Renderer
+from tgcast._ratelimit import RateLimiter
+from tgcast._storage import Store
+from tgcast._telegram import APIError, TelegramClient
+from tgcast._templates import Renderer
 
 
 def _backoff(attempt: int, base: float, maximum: float) -> float:
@@ -61,7 +61,7 @@ class Engine:
         self._max_retries = max_retries
         self._base_backoff = base_backoff
         self._max_backoff = max_backoff
-        self._log = logger or logging.getLogger("telecast")
+        self._log = logger or logging.getLogger("tgcast")
 
         self._stop = threading.Event()
         self._threads: list[threading.Thread] = []
@@ -77,15 +77,15 @@ class Engine:
         self._pool = ThreadPoolExecutor(max_workers=self._max_concurrency)
 
         threads = [
-            threading.Thread(target=self._scheduler_loop, name="telecast-scheduler", daemon=True),
-            threading.Thread(target=self._campaign_loop, name="telecast-campaigns", daemon=True),
-            threading.Thread(target=self._lease_recovery_loop, name="telecast-lease-recovery", daemon=True),
-            threading.Thread(target=self._campaign_stats_loop, name="telecast-campaign-stats", daemon=True),
+            threading.Thread(target=self._scheduler_loop, name="tgcast-scheduler", daemon=True),
+            threading.Thread(target=self._campaign_loop, name="tgcast-campaigns", daemon=True),
+            threading.Thread(target=self._lease_recovery_loop, name="tgcast-lease-recovery", daemon=True),
+            threading.Thread(target=self._campaign_stats_loop, name="tgcast-campaign-stats", daemon=True),
         ]
         for t in threads:
             t.start()
         self._threads = threads
-        self._log.info("telecast engine started (workers=%d)", self._max_concurrency)
+        self._log.info("tgcast engine started (workers=%d)", self._max_concurrency)
 
     def shutdown(self, timeout: float = 10.0) -> None:
         """Gracefully stop the engine."""
@@ -94,7 +94,7 @@ class Engine:
             t.join(timeout=timeout)
         if self._pool:
             self._pool.shutdown(wait=True, cancel_futures=False)
-        self._log.info("telecast engine stopped")
+        self._log.info("tgcast engine stopped")
 
     @property
     def running(self) -> bool:

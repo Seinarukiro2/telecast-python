@@ -2,7 +2,7 @@
 
 import os
 import signal
-from telecast import Telecast, Task
+from tgcast import Telecast, Task
 
 class MarkdownRenderer:
     def render(self, key: str, locale: str, vars: dict) -> str:
@@ -12,7 +12,7 @@ class MarkdownRenderer:
 
 eng = Telecast(
     bot_token=os.environ["BOT_TOKEN"],
-    store_dsn="telecast.db",
+    store_dsn="tgcast.db",
     template_renderer=MarkdownRenderer(),
 )
 eng.start()

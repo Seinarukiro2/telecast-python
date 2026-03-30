@@ -1,5 +1,5 @@
 import time
-from telecast._ratelimit import RateLimiter
+from tgcast._ratelimit import RateLimiter
 
 
 def test_first_acquire_instant():

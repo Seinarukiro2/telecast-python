@@ -1,4 +1,4 @@
-from telecast import Task, Priority, TaskKind, CampaignConfig, Recipient, LocaleStrategy
+from tgcast import Task, Priority, TaskKind, CampaignConfig, Recipient, LocaleStrategy
 
 
 def test_task_defaults():

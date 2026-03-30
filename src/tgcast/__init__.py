@@ -1,8 +1,8 @@
-"""Telecast — lightweight Telegram Bot API broadcast engine for Python.
+"""tgcast — lightweight Telegram Bot API broadcast engine for Python.
 
 Usage::
 
-    from telecast import Telecast, Task
+    from tgcast import Telecast, Task
 
     eng = Telecast(bot_token="123:ABC")
     eng.start()
@@ -18,8 +18,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from telecast._engine import Engine
-from telecast._models import (
+from tgcast._engine import Engine
+from tgcast._models import (
     CampaignConfig,
     CampaignStats,
     LocaleStrategy,
@@ -30,9 +30,9 @@ from telecast._models import (
     TaskKind,
     TaskState,
 )
-from telecast._storage import DuplicateKeyError, Store
-from telecast._telegram import TelegramClient
-from telecast._templates import Renderer, TemplateEngine
+from tgcast._storage import DuplicateKeyError, Store
+from tgcast._telegram import TelegramClient
+from tgcast._templates import Renderer, TemplateEngine
 
 __all__ = [
     "Telecast",
@@ -55,7 +55,7 @@ class Telecast:
 
     Args:
         bot_token: Telegram Bot API token (required).
-        store_dsn: SQLite database path. Default: ``"telecast.db"``.
+        store_dsn: SQLite database path. Default: ``"tgcast.db"``.
         templates_path: Path to YAML templates file.
         templates_data: Raw YAML bytes (takes priority over path).
         template_renderer: Custom :class:`Renderer` implementation.
@@ -68,7 +68,7 @@ class Telecast:
         max_retries: Max retries before DLQ. Default: ``5``.
         base_backoff: Initial retry delay in seconds. Default: ``1``.
         max_backoff: Max retry delay in seconds. Default: ``300``.
-        logger: Custom logger. Default: ``logging.getLogger("telecast")``.
+        logger: Custom logger. Default: ``logging.getLogger("tgcast")``.
     """
 
     def __init__(

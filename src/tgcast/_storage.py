@@ -8,7 +8,7 @@ import threading
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from telecast._models import (
+from tgcast._models import (
     PRIORITY_WEIGHTS,
     CampaignConfig,
     CampaignRecipientRow,

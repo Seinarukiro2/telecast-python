@@ -6,7 +6,7 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import pytest
-from telecast import Telecast, Task, Priority, CampaignConfig, Recipient
+from tgcast import Telecast, Task, Priority, CampaignConfig, Recipient
 
 
 class _TelegramHandler(BaseHTTPRequestHandler):
@@ -101,7 +101,7 @@ class TestEnqueueAndDeliver:
 
     def test_idempotency(self, engine: Telecast):
         engine.enqueue(Task(chat_id=1, text="a", idempotency_key="k1"))
-        from telecast._storage import DuplicateKeyError
+        from tgcast._storage import DuplicateKeyError
         with pytest.raises(DuplicateKeyError):
             engine.enqueue(Task(chat_id=2, text="b", idempotency_key="k1"))
 

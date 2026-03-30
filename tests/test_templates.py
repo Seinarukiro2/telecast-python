@@ -1,5 +1,5 @@
 import pytest
-from telecast._templates import TemplateEngine
+from tgcast._templates import TemplateEngine
 
 _YAML = """
 welcome:

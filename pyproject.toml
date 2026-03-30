@@ -41,11 +41,11 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Seinarukiro2/pytelecast"
-Repository = "https://github.com/Seinarukiro2/pytelecast"
+Homepage = "https://github.com/Seinarukiro2/telecast-python"
+Repository = "https://github.com/Seinarukiro2/telecast-python"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/telecast"]
+packages = ["src/tgcast"]
 
 [tool.ruff]
 target-version = "py311"

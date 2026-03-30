@@ -2,11 +2,11 @@
 
 import os
 import signal
-from telecast import Telecast, Task, Priority
+from tgcast import Telecast, Task, Priority
 
 eng = Telecast(
     bot_token=os.environ["BOT_TOKEN"],
-    store_dsn="telecast.db",
+    store_dsn="tgcast.db",
 )
 eng.start()
 

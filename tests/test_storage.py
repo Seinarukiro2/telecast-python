@@ -1,7 +1,7 @@
 import time
 import pytest
-from telecast import Task, Priority, CampaignConfig, Recipient
-from telecast._storage import Store, DuplicateKeyError
+from tgcast import Task, Priority, CampaignConfig, Recipient
+from tgcast._storage import Store, DuplicateKeyError
 
 
 @pytest.fixture
@@ -205,7 +205,7 @@ class TestCampaigns:
         assert stats.pending == 1
 
     def test_campaign_status_transitions(self, store: Store):
-        from telecast._models import CampaignStatus
+        from tgcast._models import CampaignStatus
         cid = store.campaign_create(CampaignConfig(name="t", template_key="k"))
 
         store.campaign_update_status(cid, CampaignStatus.RUNNING)

@@ -2,11 +2,11 @@
 
 import os
 import time
-from telecast import Telecast, CampaignConfig, Recipient
+from tgcast import Telecast, CampaignConfig, Recipient
 
 eng = Telecast(
     bot_token=os.environ["BOT_TOKEN"],
-    store_dsn="telecast.db",
+    store_dsn="tgcast.db",
     templates_data=b"""
 welcome:
   en: "Hello, {name}! Welcome aboard."

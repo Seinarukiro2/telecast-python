@@ -1,4 +1,4 @@
-# Telecast
+# tgcast
 
 Lightweight Telegram Bot API broadcast engine for Python.
 
@@ -8,6 +8,7 @@ Lightweight Telegram Bot API broadcast engine for Python.
 - **Campaigns** — broadcast to millions in batches, crash-safe with idempotent enqueue
 - **SQLite** — WAL mode, single-file, zero config
 - **Templates** — YAML with locale fallback, or plug in your own renderer
+- **Media** — send photos and documents (file_id, URL, or local path)
 
 > **Intended use:** transactional notifications and opt-in messaging.
 > Please respect [Telegram Bot API policies](https://core.telegram.org/bots/faq#how-can-i-message-all-of-my-bot-39s-subscribers-at-once).
@@ -15,13 +16,13 @@ Lightweight Telegram Bot API broadcast engine for Python.
 ## Install
 
 ```bash
-pip install telecast
+pip install tgcast
 ```
 
 For YAML templates:
 
 ```bash
-pip install telecast[templates]
+pip install tgcast[templates]
 ```
 
 Requires Python 3.11+.
@@ -31,14 +32,14 @@ Requires Python 3.11+.
 ```python
 import os
 import signal
-from telecast import Telecast, Task
+from tgcast import Telecast, Task
 
 eng = Telecast(bot_token=os.environ["BOT_TOKEN"])
 eng.start()
 
 task_id = eng.enqueue(Task(
     chat_id=123456789,
-    text="Hello from Telecast!",
+    text="Hello from tgcast!",
 ))
 print(f"Enqueued: {task_id}")
 
@@ -59,7 +60,7 @@ See [`examples/`](examples/) for more.
 
 ```python
 # Lifecycle
-eng = Telecast(bot_token="...", store_dsn="telecast.db")
+eng = Telecast(bot_token="...", store_dsn="tgcast.db")
 eng.start()
 eng.shutdown()
 
@@ -112,6 +113,28 @@ class MyRenderer:
 eng = Telecast(bot_token="...", template_renderer=MyRenderer())
 ```
 
+## Media
+
+```python
+from tgcast import Telecast, Task, TaskKind
+
+eng.enqueue(Task(
+    chat_id=123,
+    kind=TaskKind.SEND_PHOTO,
+    photo="https://cdn.example.com/banner.jpg",
+    caption="Check this out!",
+))
+
+eng.enqueue(Task(
+    chat_id=123,
+    kind=TaskKind.SEND_DOCUMENT,
+    document="/path/to/report.pdf",
+    caption="Monthly report",
+))
+```
+
+`photo` and `document` accept file_id, URL, or local file path.
+
 ## Configuration
 
 All parameters have sensible defaults. Only `bot_token` is required.
@@ -119,7 +142,7 @@ All parameters have sensible defaults. Only `bot_token` is required.
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `bot_token` | — | Telegram Bot API token |
-| `store_dsn` | `telecast.db` | SQLite database path |
+| `store_dsn` | `tgcast.db` | SQLite database path |
 | `templates_path` | — | YAML templates file |
 | `templates_data` | — | YAML templates as bytes |
 | `template_renderer` | — | Custom renderer (overrides YAML) |
@@ -130,6 +153,7 @@ All parameters have sensible defaults. Only `bot_token` is required.
 | `max_retries` | `5` | Max retries before DLQ |
 | `base_backoff` | `1` | Initial retry delay (seconds) |
 | `max_backoff` | `300` | Max retry delay (seconds) |
+| `logger` | `logging.getLogger("tgcast")` | Custom logger |
 
 ## Idempotency
 

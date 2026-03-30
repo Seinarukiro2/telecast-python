@@ -2,7 +2,7 @@
 
 import os
 import time
-from telecast import Telecast, Task
+from tgcast import Telecast, Task
 
 with Telecast(bot_token=os.environ["BOT_TOKEN"], store_dsn=":memory:") as eng:
     task_id = eng.enqueue(Task(chat_id=123456789, text="Hello!"))

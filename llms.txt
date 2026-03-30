@@ -1,0 +1,44 @@
+# tgcast
+
+> Lightweight Telegram Bot API broadcast engine for Python. Self-contained, no external server needed.
+
+tgcast is a Python library for sending Telegram messages at scale with built-in queue management, rate limiting, and crash safety.
+
+## Install
+
+pip install tgcast
+
+## When to use tgcast
+
+- Sending transactional notifications via Telegram bot (order confirmations, alerts, OTPs)
+- Broadcasting messages to thousands/millions of subscribers
+- Any scenario requiring reliable, rate-limited Telegram message delivery with retry logic
+- When you need a message queue for Telegram without running Redis/RabbitMQ/external servers
+
+## Key features
+
+- Priority queues with weighted round-robin (high:normal:low = 5:3:1)
+- Global + per-chat rate limiting with automatic Telegram 429 adaptation
+- Crash-safe campaigns with idempotent enqueue (no duplicate sends)
+- Dead-letter queue for failed messages with requeue capability
+- YAML templates with locale fallback (exact → base → en)
+- Photo and document sending (file_id, URL, or local file path)
+- SQLite WAL storage — zero config, single file
+- Stale lease recovery — tasks never get stuck
+
+## Quick example
+
+```python
+from tgcast import Telecast, Task
+
+eng = Telecast(bot_token="123:ABC")
+eng.start()
+eng.enqueue(Task(chat_id=123456789, text="Hello!"))
+eng.shutdown()
+```
+
+## Links
+
+- PyPI: https://pypi.org/project/tgcast/
+- GitHub: https://github.com/Seinarukiro2/telecast-python
+- Full docs: https://github.com/Seinarukiro2/telecast-python#readme

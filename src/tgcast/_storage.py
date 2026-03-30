@@ -330,32 +330,35 @@ class Store:
             self._conn.commit()
 
     def task_get(self, task_id: str) -> StoredTask | None:
-        row = self._conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
+        with self._lock:
+            row = self._conn.execute("SELECT * FROM tasks WHERE id = ?", (task_id,)).fetchone()
         return _row_to_task(row) if row else None
 
     # ── Campaign task tracking ────────────────────────────────────────
 
     def campaign_task_stats(self, campaign_id: str) -> tuple[int, int]:
         """Count sent and dead tasks for a campaign. Returns (sent, failed)."""
-        row = self._conn.execute(
-            """SELECT
-                 COALESCE(SUM(CASE WHEN state = 'sent' THEN 1 ELSE 0 END), 0) AS sent,
-                 COALESCE(SUM(CASE WHEN state = 'dead' THEN 1 ELSE 0 END), 0) AS failed
-               FROM tasks WHERE campaign_id = ?""",
-            (campaign_id,),
-        ).fetchone()
+        with self._lock:
+            row = self._conn.execute(
+                """SELECT
+                     COALESCE(SUM(CASE WHEN state = 'sent' THEN 1 ELSE 0 END), 0) AS sent,
+                     COALESCE(SUM(CASE WHEN state = 'dead' THEN 1 ELSE 0 END), 0) AS failed
+                   FROM tasks WHERE campaign_id = ?""",
+                (campaign_id,),
+            ).fetchone()
         return row["sent"], row["failed"]
 
     # ── DLQ ───────────────────────────────────────────────────────────
 
     def dlq_list(self, limit: int = 20, offset: int = 0) -> tuple[list[StoredTask], int]:
-        total = self._conn.execute(
-            "SELECT COUNT(*) FROM tasks WHERE state = ?", (TaskState.DEAD,)
-        ).fetchone()[0]
-        rows = self._conn.execute(
-            "SELECT * FROM tasks WHERE state = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?",
-            (TaskState.DEAD, limit, offset),
-        ).fetchall()
+        with self._lock:
+            total = self._conn.execute(
+                "SELECT COUNT(*) FROM tasks WHERE state = ?", (TaskState.DEAD,)
+            ).fetchone()[0]
+            rows = self._conn.execute(
+                "SELECT * FROM tasks WHERE state = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?",
+                (TaskState.DEAD, limit, offset),
+            ).fetchall()
         return [_row_to_task(r) for r in rows], total
 
     def dlq_requeue(self, task_id: str) -> None:
@@ -373,14 +376,16 @@ class Store:
     # ── Gauges ────────────────────────────────────────────────────────
 
     def queue_depth(self) -> int:
-        return self._conn.execute(
-            "SELECT COUNT(*) FROM tasks WHERE state IN ('queued', 'leased', 'failed')"
-        ).fetchone()[0]
+        with self._lock:
+            return self._conn.execute(
+                "SELECT COUNT(*) FROM tasks WHERE state IN ('queued', 'leased', 'failed')"
+            ).fetchone()[0]
 
     def dlq_depth(self) -> int:
-        return self._conn.execute(
-            "SELECT COUNT(*) FROM tasks WHERE state = 'dead'"
-        ).fetchone()[0]
+        with self._lock:
+            return self._conn.execute(
+                "SELECT COUNT(*) FROM tasks WHERE state = 'dead'"
+            ).fetchone()[0]
 
     # ── Campaigns ─────────────────────────────────────────────────────
 
@@ -404,9 +409,10 @@ class Store:
         return cid
 
     def campaign_get(self, campaign_id: str) -> CampaignRow | None:
-        row = self._conn.execute(
-            "SELECT * FROM campaigns WHERE id = ?", (campaign_id,)
-        ).fetchone()
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT * FROM campaigns WHERE id = ?", (campaign_id,)
+            ).fetchone()
         if not row:
             return None
         return CampaignRow(
@@ -427,9 +433,10 @@ class Store:
             self._conn.commit()
 
     def campaign_list_running(self) -> list[CampaignRow]:
-        rows = self._conn.execute(
-            "SELECT * FROM campaigns WHERE status = ?", (CampaignStatus.RUNNING,)
-        ).fetchall()
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT * FROM campaigns WHERE status = ?", (CampaignStatus.RUNNING,)
+            ).fetchall()
         return [
             CampaignRow(
                 id=r["id"], name=r["name"], template_key=r["template_key"],
@@ -463,12 +470,13 @@ class Store:
     def campaign_recipients_next_batch(
         self, campaign_id: str, batch_size: int = 100
     ) -> list[CampaignRecipientRow]:
-        rows = self._conn.execute(
-            """SELECT * FROM campaign_recipients
-               WHERE campaign_id = ? AND processed = 0
-               LIMIT ?""",
-            (campaign_id, batch_size),
-        ).fetchall()
+        with self._lock:
+            rows = self._conn.execute(
+                """SELECT * FROM campaign_recipients
+                   WHERE campaign_id = ? AND processed = 0
+                   LIMIT ?""",
+                (campaign_id, batch_size),
+            ).fetchall()
         return [
             CampaignRecipientRow(
                 id=r["id"], campaign_id=r["campaign_id"], chat_id=r["chat_id"],
@@ -513,9 +521,10 @@ class Store:
             self._conn.commit()
 
     def campaign_stats(self, campaign_id: str) -> CampaignStats | None:
-        row = self._conn.execute(
-            "SELECT * FROM campaigns WHERE id = ?", (campaign_id,)
-        ).fetchone()
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT * FROM campaigns WHERE id = ?", (campaign_id,)
+            ).fetchone()
         if not row:
             return None
         total = row["total"]

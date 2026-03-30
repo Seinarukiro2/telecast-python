@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "telecast"
+name = "tgcast"
 version = "0.1.0"
 description = "Lightweight Telegram Bot API broadcast engine for Python"
 readme = "README.md"
